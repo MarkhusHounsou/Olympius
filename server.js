@@ -17,8 +17,16 @@ const types = {
 function sendFile(response, file) {
   readFile(file, (error, content) => {
     if (error) {
-      response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      response.end('Page introuvable');
+      // SPA fallback: serve index.html for unknown routes
+      readFile(path.join(root, 'index.html'), (err2, html) => {
+        if (err2) {
+          response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+          response.end('Page introuvable');
+          return;
+        }
+        response.writeHead(200, { 'Content-Type': types['.html'] || 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+        response.end(html);
+      });
       return;
     }
 
@@ -33,7 +41,9 @@ function sendFile(response, file) {
 http.createServer((request, response) => {
   const url = new URL(request.url, `http://${request.headers.host}`);
   const requested = decodeURIComponent(url.pathname);
-  const relative = requested === '/' ? 'index.html' : requested.replace(/^\/+/, '');
+  // Strip the /Olympius/ base prefix if present
+  const stripped = requested.replace(/^\/Olympius/, '');
+  const relative = stripped === '/' || stripped === '' ? 'index.html' : stripped.replace(/^\/+/, '');
   const file = path.resolve(root, relative);
 
   if (!file.startsWith(root)) {
@@ -44,5 +54,5 @@ http.createServer((request, response) => {
 
   sendFile(response, file);
 }).listen(port, () => {
-  console.log(`Pause Café est prêt sur http://localhost:${port}`);
+  console.log(`Olympius est prêt sur http://localhost:${port}/Olympius/`);
 });

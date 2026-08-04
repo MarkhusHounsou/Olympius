@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OLYMPIUS</title>
+    <script>
+      // SPA fallback for GitHub Pages: redirect any unknown path to the app root.
+      var base = '/Olympius/';
+      var newPath = base;
+      if (sessionStorage.redirect) {
+        newPath = sessionStorage.redirect;
+        sessionStorage.removeItem('redirect');
+      }
+      window.location.replace(newPath);
+    </script>
+  </head>
+  <body>
+    <noscript>Veuillez activer JavaScript pour accéder à OLYMPIUS.</noscript>
+  </body>
+</html>

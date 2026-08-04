@@ -1,13 +1,1 @@
-{
-  "expo": {
-    "name": "OLYMPIUS",
-    "slug": "olympius",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "userInterfaceStyle": "dark",
-    "web": {
-      "bundler": "metro",
-      "output": "single"
-    }
-  }
-}
+{"expo":{"name":"OLYMPIUS","slug":"olympius","version":"1.0.0","orientation":"portrait","userInterfaceStyle":"dark","web":{"bundler":"metro","output":"single","baseUrl":"/Olympius/"}}}
