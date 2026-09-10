@@ -1,41 +1,81 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Header } from '../components/Header';
+import { CategoryFilter } from '../components/CategoryFilter';
 import { ChallengeCard } from '../components/ChallengeCard';
-import { DividerTitle, Display, Screen } from '../components/Ui';
-import { challenges } from '../mocks/data';
-import { useTheme } from '../theme/ThemeContext';
+import { Screen, SectionLabel } from '../components/Ui';
+import { CHALLENGE_CATEGORIES, challenges } from '../mocks/data';
+import { layout } from '../theme/layout';
 
 export function ChallengesScreen({ navigation }) {
-  const { theme } = useTheme();
-  const current = challenges.filter((item) => item.active);
-  const future = challenges.filter((item) => !item.active);
+  const [filter, setFilter] = useState('ALL');
   const open = (challenge) => navigation.navigate('ChallengeDetail', { challengeId: challenge.id });
+  const filtered = filter === 'ALL' ? challenges : challenges.filter((item) => item.category === filter);
+  const active = filtered.filter((item) => item.active);
+  const upcoming = filtered.filter((item) => !item.active);
+
   return (
-    <Screen contentStyle={styles.content}>
-      <Header navigation={navigation} />
-      <Display size={50} align="center" style={styles.title}>DÉFIS</Display>
-      <DividerTitle style={styles.section}><Text>EN COURS</Text></DividerTitle>
-      <View style={styles.filters}><Text style={[styles.until, { color: theme.text }]}>Fin dans 01 : 25 : 17</Text><View style={styles.filterSet}><Pressable style={[styles.listIcon, { borderColor: theme.line }]}><Ionicons name="list-outline" size={25} color={theme.text} /></Pressable><Pressable style={[styles.filter, { borderColor: theme.line }]}><Text style={[styles.filterText, { color: theme.text }]}>Filtrer</Text></Pressable></View></View>
-      <View style={styles.cards}>{current.map((challenge) => <View key={challenge.id}><Text style={[styles.timer, { color: theme.text }]}>Fin dans {challenge.timer}</Text><ChallengeCard challenge={challenge} expanded onPress={() => open(challenge)} /></View>)}</View>
-      <DividerTitle style={styles.tomorrow}>DEMAIN</DividerTitle>
-      <Text style={[styles.timer, { color: theme.text }]}>Débute dans 14 : 49 : 05</Text>
-      <ChallengeCard challenge={future[0]} expanded disabled />
+    <Screen scroll={false} contentStyle={styles.content}>
+      <Header navigation={navigation} title="Défis" />
+      <View style={styles.filterArea}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterScroll}
+          contentContainerStyle={styles.filters}
+        >
+          <CategoryFilter
+            id="ALL"
+            label="Tous"
+            icon="grid-outline"
+            active={filter === 'ALL'}
+            onPress={() => setFilter('ALL')}
+          />
+          {CHALLENGE_CATEGORIES.map((category) => (
+            <CategoryFilter
+              key={category.id}
+              id={category.id}
+              label={category.label}
+              icon={category.icon}
+              active={filter === category.id}
+              onPress={() => setFilter(category.id)}
+            />
+          ))}
+        </ScrollView>
+      </View>
+      <ScrollView style={styles.listScroll} contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+        {active.length > 0 && (
+          <View style={styles.section}>
+            <SectionLabel>En cours</SectionLabel>
+            <View style={styles.cards}>
+              {active.map((challenge) => (
+                <ChallengeCard key={challenge.id} challenge={challenge} compact onPress={() => open(challenge)} />
+              ))}
+            </View>
+          </View>
+        )}
+        {upcoming.length > 0 && (
+          <View style={styles.section}>
+            <SectionLabel>Prochainement</SectionLabel>
+            <View style={styles.cards}>
+              {upcoming.map((challenge) => (
+                <ChallengeCard key={challenge.id} challenge={challenge} compact disabled />
+              ))}
+            </View>
+          </View>
+        )}
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { paddingBottom: 34 },
-  title: { marginTop: 43 },
-  section: { marginTop: 73 },
-  filters: { marginTop: 10 },
-  until: { marginTop: 12, fontFamily: 'Anton_400Regular', fontSize: 23 },
-  filterSet: { flexDirection: 'row', gap: 10, alignSelf: 'flex-end', marginTop: -36 },
-  listIcon: { borderWidth: 1.5, borderRadius: 10, height: 43, width: 64, alignItems: 'center', justifyContent: 'center' },
-  filter: { height: 43, minWidth: 125, borderWidth: 1.5, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  filterText: { fontFamily: 'Anton_400Regular', fontSize: 20 },
-  cards: { marginTop: 15, gap: 28 },
-  timer: { margin: 8, fontFamily: 'Anton_400Regular', fontSize: 20 },
-  tomorrow: { marginTop: 68 },
+  content: { flex: 1, paddingBottom: 0 },
+  filterArea: { height: 136, flexShrink: 0 },
+  filterScroll: { flex: 1 },
+  filters: { gap: 12, paddingBottom: 28, paddingRight: layout.screenPaddingX },
+  listScroll: { flex: 1 },
+  list: { paddingBottom: layout.screenPaddingBottom },
+  section: { marginBottom: layout.sectionGap },
+  cards: { gap: 10 },
 });

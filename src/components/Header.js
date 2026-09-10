@@ -3,9 +3,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { notifications } from '../mocks/data';
 import { useAppDemo } from '../context/AppDemoContext';
+import { layout } from '../theme/layout';
 import { useTheme } from '../theme/ThemeContext';
 
-export function Header({ navigation, back = false, title = 'OLYMPIUS' }) {
+export function Header({ navigation, back = false, title, minimal = false }) {
   const { theme } = useTheme();
   const { hasNotifications, markNotificationsRead } = useAppDemo();
   const [open, setOpen] = useState(false);
@@ -17,36 +18,38 @@ export function Header({ navigation, back = false, title = 'OLYMPIUS' }) {
 
   return (
     <>
-      <View style={styles.header}>
+      <View style={[styles.header, minimal && styles.headerMinimal]}>
         <Pressable
           accessibilityLabel={back ? 'Retour' : 'Réglages'}
-          onPress={() => back ? navigation.goBack() : navigation.navigate('Settings')}
+          onPress={() => (back ? navigation.goBack() : navigation.navigate('Settings'))}
           style={styles.headerAction}
+          hitSlop={8}
         >
-          <Ionicons name={back ? 'chevron-back' : 'settings-outline'} size={30} color={theme.text} />
+          <Ionicons name={back ? 'chevron-back' : 'settings-outline'} size={22} color={theme.textMuted} />
         </Pressable>
-        <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
-        <Pressable accessibilityLabel="Notifications" onPress={openNotifications} style={styles.headerAction}>
-          <Ionicons name="notifications-outline" size={28} color={theme.text} />
+        {title ? (
+          <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>{title}</Text>
+        ) : (
+          <View style={styles.titleSpacer} />
+        )}
+        <Pressable accessibilityLabel="Notifications" onPress={openNotifications} style={styles.headerAction} hitSlop={8}>
+          <Ionicons name="notifications-outline" size={22} color={theme.textMuted} />
           {hasNotifications && <View style={[styles.dot, { backgroundColor: theme.danger }]} />}
         </Pressable>
       </View>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <Pressable onPress={() => setOpen(false)} style={[styles.modalShade, { backgroundColor: theme.backgroundSoft }]}>
-          <Pressable style={[styles.sheet, { backgroundColor: theme.surface, borderColor: theme.accentPrimary }]}>
-            <Text style={[styles.sheetTitle, { color: theme.text }]}>NOTIFICATIONS</Text>
+          <Pressable style={[styles.sheet, { backgroundColor: theme.surface, borderColor: theme.track }]}>
+            <Text style={[styles.sheetTitle, { color: theme.text }]}>Notifications</Text>
             {notifications.map((item) => (
               <View key={item.id} style={[styles.notification, { borderBottomColor: theme.track }]}>
-                <View style={[styles.noticeMark, { backgroundColor: theme.accentPrimary }]} />
-                <View style={styles.noticeCopy}>
-                  <Text style={[styles.noticeTitle, { color: theme.text }]}>{item.title}</Text>
-                  <Text style={[styles.noticeDetail, { color: theme.textMuted }]}>{item.detail}</Text>
-                </View>
+                <Text style={[styles.noticeTitle, { color: theme.text }]}>{item.title}</Text>
+                <Text style={[styles.noticeDetail, { color: theme.textMuted }]}>{item.detail}</Text>
               </View>
             ))}
-            <Pressable onPress={() => setOpen(false)} style={[styles.close, { borderColor: theme.line }]}>
-              <Text style={[styles.closeText, { color: theme.text }]}>FERMER</Text>
+            <Pressable onPress={() => setOpen(false)} style={styles.close}>
+              <Text style={[styles.closeText, { color: theme.textMuted }]}>Fermer</Text>
             </Pressable>
           </Pressable>
         </Pressable>
@@ -56,18 +59,24 @@ export function Header({ navigation, back = false, title = 'OLYMPIUS' }) {
 }
 
 const styles = StyleSheet.create({
-  header: { minHeight: 72, paddingTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerAction: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
-  title: { fontFamily: 'Anton_400Regular', fontSize: 27, letterSpacing: 0.6 },
-  dot: { position: 'absolute', right: 9, top: 9, width: 11, height: 11, borderRadius: 6 },
-  modalShade: { flex: 1, justifyContent: 'flex-end', padding: 18 },
-  sheet: { borderWidth: 1, borderRadius: 24, padding: 21 },
-  sheetTitle: { fontFamily: 'Anton_400Regular', fontSize: 28, letterSpacing: 0.4 },
-  notification: { flexDirection: 'row', gap: 12, paddingVertical: 17, borderBottomWidth: 1 },
-  noticeMark: { width: 9, height: 9, borderRadius: 5, marginTop: 7 },
-  noticeCopy: { flex: 1 },
-  noticeTitle: { fontWeight: '800', fontSize: 15 },
-  noticeDetail: { marginTop: 4, lineHeight: 19, fontSize: 13 },
-  close: { alignSelf: 'center', marginTop: 18, paddingVertical: 8, paddingHorizontal: 25, borderWidth: 1, borderRadius: 20 },
-  closeText: { fontFamily: 'Anton_400Regular', fontSize: 17 },
+  header: {
+    minHeight: layout.headerHeight,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  headerMinimal: { marginBottom: 4 },
+  headerAction: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  title: { flex: 1, textAlign: 'center', fontFamily: 'Anton_400Regular', fontSize: 18, letterSpacing: 0.5 },
+  titleSpacer: { flex: 1 },
+  dot: { position: 'absolute', right: 8, top: 8, width: 8, height: 8, borderRadius: 4 },
+  modalShade: { flex: 1, justifyContent: 'flex-end', padding: layout.screenPaddingX },
+  sheet: { borderWidth: StyleSheet.hairlineWidth, borderRadius: layout.cardRadius, padding: layout.cardPadding },
+  sheetTitle: { fontFamily: 'Anton_400Regular', fontSize: 22, marginBottom: 16 },
+  notification: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
+  noticeTitle: { fontWeight: '600', fontSize: 15 },
+  noticeDetail: { marginTop: 4, lineHeight: 20, fontSize: 14 },
+  close: { alignSelf: 'center', marginTop: 16, paddingVertical: 8 },
+  closeText: { fontSize: 14, fontWeight: '600' },
 });

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { OlympiusLogo } from '../components/OlympiusLogo';
+import { useAppDemo } from '../context/AppDemoContext';
 import { NeonButton, Screen } from '../components/Ui';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -9,9 +10,10 @@ const fields = ['Nom', 'Prénom', 'Nom d’utilisateur', 'Adresse mail', 'Mot de
 
 export function SignupScreen({ navigation }) {
   const { theme } = useTheme();
+  const { hasSportProfile } = useAppDemo();
   const [terms, setTerms] = useState(false);
   const [marketing, setMarketing] = useState(false);
-  const enter = () => navigation.reset({ index: 0, routes: [{ name: 'App' }] });
+  const enter = () => navigation.reset({ index: 0, routes: [{ name: hasSportProfile ? 'App' : 'SportProfile' }] });
   return (
     <Screen contentStyle={styles.content}>
       <View style={styles.top}><Pressable onPress={() => navigation.goBack()}><Ionicons name="chevron-back" size={35} color={theme.text} /></Pressable><OlympiusLogo size={76} showWord={false} /></View>
